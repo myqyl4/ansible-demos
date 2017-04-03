@@ -1,5 +1,5 @@
 ---
-# This playbook showcase simple ping command.
+# This playbook showcase simple ping rhel server command.
 
 - name: Ping instances
   hosts: rhel-aws-hosts

@@ -1,5 +1,5 @@
 ---
-# This playbook showcase simple ping command.
+# This playbook showcase simple ping windows server command.
 
 - name: Ping instances
   hosts: win-aws-hosts

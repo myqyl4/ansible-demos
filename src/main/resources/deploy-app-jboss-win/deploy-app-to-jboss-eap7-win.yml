@@ -1,5 +1,5 @@
 ---
-# This playbook showcase simple ping command.
+# This playbook showcase Deploy to JBoss EAP command on Windows
 
 - name: Install JBoss EAP instances
   hosts: win-aws-hosts
