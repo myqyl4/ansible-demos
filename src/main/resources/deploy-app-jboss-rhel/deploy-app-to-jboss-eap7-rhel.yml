@@ -1,0 +1,23 @@
+---
+# This playbook showcase simple ping command.
+
+- name: Install JBoss EAP instances
+  hosts: rhel-aws-hosts
+  connection: ssh
+  remote_user: ec2-user
+  sudo: True
+  gather_facts: False
+
+  tasks:
+    - name: Copy application Hello WAR file to Remote Server
+      copy: 
+        src: /home/pwere/ansibleDemo032017/demo-artifacts/hello.war
+        dest: /tmp/jboss-eap-7.0/deployments
+        backup: yes
+
+    - name: Deploy HelloWorld to JBoss jboss-eap-7.0
+      jboss: 
+        deploy_path: /usr/share/jboss-eap-7.0/standalone/deployments/
+        src: /tmp/jboss-eap-7.0/deployments/hello.war
+        deployment: hello.war
+        state: present

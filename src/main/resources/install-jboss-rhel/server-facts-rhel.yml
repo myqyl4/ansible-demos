@@ -1,0 +1,17 @@
+---
+# This playbook showcase Gathering Server Facts from RHEL 7 Server.
+
+- name: Gather Server Facts on Remote RHEL 7
+  hosts: rhel-aws-hosts
+  connection: ssh
+  remote_user: ec2-user
+  sudo: True
+  gather_facts: true
+
+  tasks:
+    - name: Gather Server Facts
+      setup:
+      register: server_ansible_facts
+    
+    - debug: 
+        var: server_ansible_facts

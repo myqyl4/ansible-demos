@@ -1,0 +1,156 @@
+
+
+
+
+        # url: https://developers.redhat.com/download-manager/file/jboss-eap-7.0.0.zip 
+        # url_password: rhn-support-pwere
+        # url_username: Scrends.two.sad.72
+        # force_basic_auth: yes
+
+
+
+    - debug:
+        msg: "wildfly-11.0.0 was downloaded"
+      when: get_wildfly-11.0.0|changed
+
+
+    - name: Workaround for systemd bug
+      shell: service jboss start && chkconfig jboss on
+      ignore_errors: yes
+
+
+    - name: Copy the init script
+      copy: 
+        src: standalone.sh 
+        dest: /etc/init.d/jboss-eap-7.0
+        owner: root
+        group: root
+        mode: 0755
+        backup: yes
+      notify: reload systemd
+
+
+
+    - name: Enable JBoss to be started at boot
+      become: true
+      service: 
+        name: jboss-eap-rhel.sh
+        enabled: yes 
+        state: started
+        
+        
+        
+        
+        
+        
+            - name: Copy JBoss EAP 7 to final directory
+      win_copy:
+        src: C:\Temp\jboss-eap-7.0\
+        dest: C:\jboss-eap7-instances\jboss-eap-7.0
+        creates: C:\jboss-eap7-instances\jboss-eap-7.0
+        remote_src: True
+
+    - name: Copy Jbcs-jsvc to final directory
+      win_copy:
+        src: C:\Temp\jbcs-jsvc-1.0.15.1
+        dest: C:\jboss-eap7-instances\jbcs-httpd24-2.4
+        creates: C:\jboss-eap7-instances\jbcs-httpd24-2.4
+        remote_src: True
+        
+        
+        
+        
+        
+        
+            - name: deploy iptables rules
+      template: 
+         src: iptables-save 
+         dest: /etc/sysconfig/iptables
+      when: ansible_distribution_major_version != "7" 
+      notify: restart iptables
+
+    - name: Ensure that firewalld is installed
+      yum: 
+        name: firewalld 
+        state: present
+      when: ansible_distribution_major_version == "7" 
+
+    - name: Ensure that firewalld is started
+      service: 
+        name: firewalld 
+        state: started
+      when: ansible_distribution_major_version == "7" 
+
+    - name: deploy firewalld rules
+      firewalld: 
+        immediate: yes 
+        port: "{{ item }}" 
+        state: enabled 
+        permanent: yes
+      when: ansible_distribution_major_version == "7"
+      with_items:
+      - "{{ http_port }}/tcp"
+      - "{{ https_port }}/tcp"
+
+
+
+
+
+
+
+
+        
+        
+        
+
+
+[pwere@pwere install-jboss]$ ansible-playbook install-jboss-aws.yml
+[DEPRECATION WARNING]: Instead of sudo/sudo_user, use become/become_user and make sure become_method is 'sudo' (default).
+This feature will be removed in a future release. Deprecation 
+warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+
+PLAY [Install JBoss EAP instances] *********************************************
+
+TASK [Install Java 1.8 and some basic dependencies] ****************************
+ok: [ec2-54-186-208-97.us-west-2.compute.amazonaws.com] => (item=[u'unzip', u'java-1.8.0-openjdk.x86_64', u'libselinux-python', u'libsemanage-python'])
+
+TASK [Download JBoss from jboss.org] *******************************************
+ok: [ec2-54-186-208-97.us-west-2.compute.amazonaws.com]
+
+TASK [Extract archive] *********************************************************
+skipping: [ec2-54-186-208-97.us-west-2.compute.amazonaws.com]
+
+TASK [Rename install directory] ************************************************
+changed: [ec2-54-186-208-97.us-west-2.compute.amazonaws.com]
+
+TASK [Copying standalone.xml configuration file] *******************************
+ok: [ec2-54-186-208-97.us-west-2.compute.amazonaws.com]
+
+TASK [Add group "jboss"] *******************************************************
+changed: [ec2-54-186-208-97.us-west-2.compute.amazonaws.com]
+
+TASK [Add user "jboss"] ********************************************************
+changed: [ec2-54-186-208-97.us-west-2.compute.amazonaws.com]
+
+TASK [Change ownership of JBoss installation] **********************************
+changed: [ec2-54-186-208-97.us-west-2.compute.amazonaws.com]
+
+TASK [Copy the init script] ****************************************************
+changed: [ec2-54-186-208-97.us-west-2.compute.amazonaws.com]
+
+TASK [Workaround for systemd bug] **********************************************
+fatal: [ec2-54-186-208-97.us-west-2.compute.amazonaws.com]: FAILED! => {"changed": true, "cmd": "service jboss start && chkconfig jboss on", "delta": "0:00:00.046801", "end": "2017-04-01 01:56:38.847561", "failed": true, "rc": 1, "start": "2017-04-01 01:56:38.800760", "stderr": "Error: Unable to access jarfile /etc/jboss-modules.jar", "stdout": "=========================================================================\n\n  JBoss Bootstrap Environment\n\n  JBOSS_HOME: /etc\n\n  JAVA: java\n\n  JAVA_OPTS:  -server \n\n=========================================================================", "stdout_lines": ["=========================================================================", "", "  JBoss Bootstrap Environment", "", "  JBOSS_HOME: /etc", "", "  JAVA: java", "", "  JAVA_OPTS:  -server ", "", "========================================================================="], "warnings": ["Consider using service module rather than running service"]}
+...ignoring
+
+TASK [Enable JBoss to be started at boot] **************************************
+fatal: [ec2-54-186-208-97.us-west-2.compute.amazonaws.com]: FAILED! => {"changed": false, "failed": true, "msg": "Unable to enable service jboss: jboss.service is not a native service, redirecting to /sbin/chkconfig.\nExecuting /sbin/chkconfig jboss on\nservice jboss does not support chkconfig\n"}
+	to retry, use: --limit @/home/pwere/ansibleDemo032017/playbooks/install-jboss/install-jboss-aws.retry
+
+PLAY RECAP *********************************************************************
+ec2-54-186-208-97.us-west-2.compute.amazonaws.com : ok=9    changed=6    unreachable=0    failed=1   
+
+[pwere@pwere install-jboss]$ 
+
+
+
+

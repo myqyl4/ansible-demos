@@ -1,0 +1,68 @@
+---
+# This playbook showcase Installing JBoss on Windows.
+
+- name: Install JBoss EAP instances on Remote Windows
+  hosts: win-aws-hosts
+
+  tasks:
+    - name: Upload JBoss EAP 7 to the Server
+      win_copy:
+        src: /home/pwere/ansibleDemo032017/demo-artifacts/jboss-eap-7.0.0.zip
+        dest: C:\Temp\jboss-eap-7.0.0.zip
+
+    - name: Upload jbcs-jsvc-1.0.15.1-win6.x86_64 to the Serve
+      win_copy:
+        src: /home/pwere/ansibleDemo032017/demo-artifacts/jbcs-jsvc-1.0.15.1-win6.x86_64.zip
+        dest: C:\Temp\jbcs-jsvc-1.0.15.1-win6.x86_64.zip
+
+    - name: Upload Java 1.8 to the Server
+      win_copy:
+        src: /home/pwere/ansibleDemo032017/demo-artifacts/jdk-8u121-windows-x64.exe
+        dest: C:\Temp\jdk-8u121-windows-x64.exe
+
+    - name: Unzip JBoss EAP 7 zip file
+      win_unzip:
+        src: C:\Temp\jboss-eap-7.0.0.zip
+        dest: C:\jboss-eap7-instances\
+        creates: C:\jboss-eap7-instances\jboss-eap-7.0
+
+    - name: Unzip Jbcs-jsvc zip file
+      win_unzip:
+        src: C:\Temp\jbcs-jsvc-1.0.15.1-win6.x86_64.zip
+        dest: C:\jboss-eap7-instances\
+        creates: C:\jboss-eap7-instances\jbcs-httpd24-2.4
+        
+    - name: Copy JBoss EAP 7 Standalone.xml
+      win_copy:
+        src: standalone.bat
+        dest: C:\jboss-eap7-instances\jboss-eap-7.0\standalone\configuration\
+
+    - name: Copy PS1 Script to EAP 7 bin
+      win_copy:
+        src: install-jboss-eap7-service.ps1
+        dest: C:\jboss-eap7-instances\jboss-eap-7.0\bin\
+        
+    - name: Copy service Script to EAP 7 bin
+      win_copy:
+        src: service.bat
+        dest: C:\jboss-eap7-instances\jboss-eap-7.0\bin\
+        
+    - name: Create JBOSS_HOME environment variable      
+      win_environment:
+        state: present
+        name: JBOSS_HOME
+        value: C:\jboss-eap7-instances\jboss-eap-7.0
+        level: machine
+    
+    - name: Install JBoss EAP 7 as a service   
+      win_shell:  C:\jboss-eap7-instances\jboss-eap-7.0\bin\install-jboss-eap7-service.ps1 >> C:\jboss-eap7-instances\jboss-eap-7.0\bin\install-eap-7-service.txt
+      args:
+        chdir: C:\jboss-eap7-instances\jboss-eap-7.0\bin\
+        creates: C:\jboss-eap7-instances\jboss-eap-7.0\bin\install-eap-7-service.txt
+
+    - name: Set JBoss EAP 7 service startup mode to auto and ensure it is started
+      win_service:
+        name: JBossEAP7
+        start_mode: auto
+        state: started
+        

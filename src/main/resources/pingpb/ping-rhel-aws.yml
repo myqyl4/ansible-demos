@@ -1,0 +1,12 @@
+---
+# This playbook showcase simple ping command.
+
+- name: Ping instances
+  hosts: rhel-aws-hosts
+  connection: ssh
+  remote_user: ec2-user
+  gather_facts: False
+
+  tasks:
+  - name: ping aws rhel hosts
+    ping:

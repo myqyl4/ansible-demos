@@ -1,0 +1,28 @@
+---
+# This playbook showcase simple ping command.
+
+- name: Install JBoss EAP instances
+  hosts: win-aws-hosts
+
+  tasks:
+    - name: Copy application Hello WAR file to Remote Server
+      win_copy:
+        src: /home/pwere/ansibleDemo032017/demo-artifacts/hello.war
+        dest:  C:\Temp\deployments\hello.war
+        backup: yes
+        
+    - name: Stop JBoss EAP 7 service startup
+      win_service:
+        name: JBossEAP7
+        state: stopped
+
+    - name: Deploy HelloWorld to JBoss jboss-eap-7.0
+      win_copy:
+        src: /home/pwere/ansibleDemo032017/demo-artifacts/hello.war
+        dest: C:\jboss-eap7-instances\jboss-eap-7.0\standalone\deployments\hello.war
+
+    - name: Start JBoss EAP 7 service
+      win_service:
+        name: JBossEAP7
+        state: started
+        

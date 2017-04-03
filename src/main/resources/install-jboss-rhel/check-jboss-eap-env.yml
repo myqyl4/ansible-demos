@@ -1,0 +1,13 @@
+---
+# This playbook showcases checking our server envrionment is ready for JBoss EAP install.
+
+- name: Install JBoss EAP instances
+  hosts: rhel-aws-hosts
+  connection: ssh
+  remote_user: ec2-user
+  sudo: True
+  gather_facts: true
+
+  tasks:
+    - name: Check Java 1.8 and some basic dependencies exists and installed
+      yum: name=java-1.8.0-openjdk.x86_64 state=present

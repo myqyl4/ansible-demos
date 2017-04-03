@@ -1,0 +1,110 @@
+---
+# This playbook showcase simple ping command.
+
+- name: Install JBoss EAP instances
+  hosts: rhel-aws-hosts
+  connection: ssh
+  remote_user: ec2-user
+  sudo: True
+  gather_facts: False
+
+  tasks:
+    - name: Install Java 1.8 and some basic dependencies
+      yum: 
+        name: "{{ item }}"
+        state: present
+      with_items:
+       - unzip
+       - java-1.8.0-openjdk.x86_64
+       - libselinux-python
+       - libsemanage-python
+
+    - name: Download JBoss from jboss.org
+      copy: 
+        src: /home/pwere/ansibleDemo032017/demo-artifacts/jboss-eap-7.0.0.zip
+        dest: /tmp/jboss-eap-7.0.0.zip
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Extract archive
+      unarchive: 
+        dest: /usr/share 
+        src: /tmp/jboss-eap-7.0.0.zip 
+        creates: /usr/share/jboss-eap-7.0
+        remote_src: True
+      register: get_jboss-eap-7.0
+
+     # Rename the dir to avoid encoding the version in the init script
+    - name: Rename install directory
+      command: chdir=/usr/share /bin/mv jboss-eap-7.0 creates=/usr/share/jboss-eap-7.0
+
+    - name: Copying standalone.xml configuration file
+      template: 
+        src: standalone.xml 
+        dest: /usr/share/jboss-eap-7.0/standalone/configuration/
+      register: update_jboss-eap-7.0_standalone
+
+    - name: Add group "jboss"
+      group: 
+        name: jboss
+        gid: 400
+        system: yes
+
+    - name: Add user "jboss"
+      user: 
+        name: jboss 
+        group: jboss 
+        home: /usr/share/jboss-eap-7.0
+        system: yes
+        uid: 400
+
+    - name: Change ownership of JBoss installation
+      file: 
+        path: /usr/share/jboss-eap-7.0/ 
+        owner: jboss 
+        group: jboss 
+        state: directory 
+        recurse: yes
+
+    - name: Copy the JBoss EAP config file
+      copy: 
+        src: jboss-eap.conf 
+        dest: /etc/default
+        owner: jboss
+        group: jboss
+        mode: 0755
+        backup: yes
+
+    - name: Copy the init script
+      copy: 
+        src: jboss-eap-rhel.sh
+        dest: /etc/init.d/jboss-eap-rhel.sh
+        owner: jboss
+        group: jboss
+        mode: 0755
+        backup: yes
+
+    - name: Add jboss-as Service
+      become: true
+      command: "chkconfig --add jboss-eap-rhel.sh"
+
+    - meta: flush_handlers
+    
+    - name: Start jboss-as Service
+      become: true    
+      command: "service jboss-eap-rhel stop"
+      ignore_errors: yes
+
+    - name: Start jboss-as Service
+      become: true    
+      command: "service jboss-eap-rhel start"
+      
+      
+    - name: Check jboss-as Service is started on RHEL Startup
+      become: true
+      command: "chkconfig jboss-eap-rhel.sh on"
+      
+    - name: Create default JBoss admin user
+      command: "/usr/share/jboss-eap-7.0/bin/add-user.sh -s -r ManagementRealm -u jboss -p jboss"
+
