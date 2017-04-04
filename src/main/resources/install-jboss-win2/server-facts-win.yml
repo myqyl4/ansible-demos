@@ -1,0 +1,14 @@
+---
+# This playbook showcase Gathering Server Facts from Windows Server.
+
+- name: Gather Server Facts on Remote Windows
+  hosts: win-aws-hosts2
+  gather_facts: true
+
+  tasks:
+    - name: Gather Server Facts
+      setup:
+      register: server_ansible_facts
+    
+    - debug: 
+        var: server_ansible_facts

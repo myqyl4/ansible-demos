@@ -1,7 +1,8 @@
 ---
 # This playbook showcases checking our server envrionment is ready for JBoss EAP install.
+
 - name: Discover Java Facts on Remote Windows
-  hosts: win-aws-hosts
+  hosts: win-aws-hosts2
   
   tasks:
     - name: Gather Java Facts
@@ -11,4 +12,3 @@
 
     - debug: 
         var: file_info
-      

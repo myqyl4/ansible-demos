@@ -1,0 +1,12 @@
+---
+# This playbook showcase simple ping windows server command.
+
+- name: Ping instances
+  hosts: win-aws-hosts2
+  connection: local
+  remote_user: ec2-user
+  gather_facts: False
+
+  tasks:
+  - name: ping aws windows hosts
+    win_ping:
